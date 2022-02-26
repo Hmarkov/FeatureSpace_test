@@ -7,18 +7,10 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 import org.json.*;
-/*
-https://stackoverflow.com/questions/2591098/how-to-parse-json-in-java
-https://stackoverflow.com/questions/12134687/how-to-add-element-into-arraylist-in-hashmap
-https://www.w3schools.com/java/java_hashmap.asp
-file:///C:/Users/icko5/AppData/Local/Packages/microsoft.windowscommunicationsapps_8wekyb3d8bbwe/LocalState/Files/S0/4/Attachments/Engineering_Take_Home_Task_2022[974].pdf
-http://postcodes.io/docs
-https://medium.com/codingthesmartway-com-blog/create-a-rest-api-with-json-server-36da8680136d
-
-
- */
 
 public class Main {
+
+
     public static String GET_request(String parameter, String postcode) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         String url="";
@@ -62,7 +54,6 @@ public class Main {
             PCode_Obj Obj= postcode_info.get(key);
           Nearest+=("Post code:"+key+"Country:"+Obj.getCountry()+"Region:"+Obj.getRegion()+"\n");
         }
-
         return Nearest;
     }
 
@@ -73,12 +64,10 @@ public class Main {
         }else{
             System.out.println("Invalid postcode");
         }
-
-
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Find_postcode_info("GU50BD");
+        Find_postcode_info("CB30FA");
 
     }
 }
