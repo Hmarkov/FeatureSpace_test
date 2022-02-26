@@ -2,6 +2,7 @@ package com.company;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
@@ -9,31 +10,52 @@ import java.util.*;
 import org.json.*;
 
 public class Main {
+    public enum Response {
+        r1("Success",200),
+        r2("Bad request/Wrong input",400),
+        r3("Not found",404),
+        r4("Server error",500);
 
+        private final String response;
+        private final int code;
+
+        public String getResponse() {return response;}
+        public int getCode() {return code;}
+
+        Response(String response, int code) {
+            this.response = response;
+            this.code = code;
+        }
+    }
 
     /*
-    https://www.baeldung.com/rest-api-error-handling-best-practices
-    file:///C:/Users/icko5/AppData/Local/Packages/microsoft.windowscommunicationsapps_8wekyb3d8bbwe/LocalState/Files/S0/4/Attachments/Engineering_Take_Home_Task_2022[974].pdf
-
+    Method to make a specific request based on parameter value
      */
-
     public static String GET_request(String parameter, String postcode) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         String url="";
         postcode=postcode.replace(" ","");
+        String res="";
         if(parameter !="") {
             url = "https://api.postcodes.io/postcodes/" + postcode + "/" + parameter;
-        }else{
-            url = "https://api.postcodes.io/postcodes/" + postcode;
+        }else{url = "https://api.postcodes.io/postcodes/" + postcode;}
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+            HttpResponse<String> response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+            res=response.body();
+        }catch (HttpConnectTimeoutException e){
+            System.out.println(e);
         }
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .build();
-        HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
-        return response.body();
+        return res;
     }
 
+    /*
+    Stringify Postcode object
+     */
     public static String Location_info(String postcode) throws IOException, InterruptedException {
         JSONObject obj = new JSONObject(GET_request("",postcode));
         String Location="Postcode:"+postcode+"\n"
@@ -42,12 +64,31 @@ public class Main {
         return Location;
     }
 
-    public static boolean validate_postcode(String postcode) throws IOException, InterruptedException {
-        JSONObject obj = new JSONObject(GET_request("validate",postcode));
-        return obj.getBoolean("result");
+    /*
+    Check the validity of a specific postcode with status code
+     */
+    public static ArrayList validate_postcode(String postcode) throws IOException, InterruptedException {
+        ArrayList res = new ArrayList();
+        if(postcode!="") {
+            JSONObject obj = new JSONObject(GET_request("validate", postcode));
+            for (Response r : Response.values()) {
+                if (r.getCode() == obj.getInt("status") && obj.getBoolean("result")!=false ) {
+                    res.add(r.getResponse());
+                    res.add(r.getCode());
+                }else{
+                    res.add(Response.values()[1].response);
+                    res.add(Response.values()[1].code);
+                }
+            }
+            return res;
+        }
+        return null;
     }
 
-    public static String Find_nearest_info(String postcode) throws IOException, InterruptedException {
+    /*
+    Store nearest postcode as keys to Postcode Object with country and region info
+     */
+    public static String Find_nearest_postcode_info(String postcode) throws IOException, InterruptedException {
         Map<String, PCode_Obj> postcode_info = new HashMap<>();
         String Nearest = "";
         JSONObject obj = new JSONObject(GET_request("nearest",postcode));
@@ -64,17 +105,22 @@ public class Main {
         return Nearest;
     }
 
+    /*
+    General function with validity check
+     */
     public static void Find_postcode_info(String postcode) throws IOException, InterruptedException {
-        if ((validate_postcode(postcode))==true){
+        if ((Integer)validate_postcode(postcode).get(1) ==200){
             System.out.println(Location_info(postcode));
-            System.out.println(Find_nearest_info(postcode));
+            System.out.println(Find_nearest_postcode_info(postcode));
         }else{
-            System.out.println("Invalid postcode");
+            System.out.println("System error:"+validate_postcode(postcode).get(1)+" "+validate_postcode(postcode).get(0));
         }
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Find_postcode_info("CB30FA");
+        Find_postcode_info("CB3 0FA");
 
+        System.out.println("Wrong Input");
+        Find_postcode_info("CB3 0F");
     }
 }
