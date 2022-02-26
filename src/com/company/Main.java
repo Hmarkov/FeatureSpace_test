@@ -20,7 +20,7 @@ public class Main {
     public static String GET_request(String parameter, String postcode) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         String url="";
-        postcode=postcode.replace(" ","")
+        postcode=postcode.replace(" ","");
         if(parameter !="") {
             url = "https://api.postcodes.io/postcodes/" + postcode + "/" + parameter;
         }else{
