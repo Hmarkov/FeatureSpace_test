@@ -11,9 +11,16 @@ import org.json.*;
 public class Main {
 
 
+    /*
+    https://www.baeldung.com/rest-api-error-handling-best-practices
+    file:///C:/Users/icko5/AppData/Local/Packages/microsoft.windowscommunicationsapps_8wekyb3d8bbwe/LocalState/Files/S0/4/Attachments/Engineering_Take_Home_Task_2022[974].pdf
+
+     */
+
     public static String GET_request(String parameter, String postcode) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         String url="";
+        postcode=postcode.replace(" ","")
         if(parameter !="") {
             url = "https://api.postcodes.io/postcodes/" + postcode + "/" + parameter;
         }else{
